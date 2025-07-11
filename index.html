@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Simulation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255,107,107,0.3);
+        }
+
+        .secondary-btn {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+
+        .secondary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(78,205,196,0.3);
+        }
+        
+        .settings-panel {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px 25px;
+            margin: 0 auto 25px auto;
+            max-width: 800px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .setting-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .setting-item label {
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .setting-item input[type="number"], .setting-item input[type="range"] {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            border-radius: 5px;
+            padding: 5px;
+            text-align: center;
+        }
+        
+        .setting-item small {
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .card h3 {
+            margin-bottom: 15px;
+            color: #ffd700;
+            font-size: 1.2em;
+        }
+
+        .chart-container {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            height: 400px;
+            position: relative;
+        }
+
+        .chart-canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 5px;
+        }
+
+        .traders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .trader-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .trader-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .trader-name {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .trader-type {
+            font-size: 0.9em;
+            padding: 4px 8px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .trader-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .profit {
+            color: #4ecdc4;
+        }
+
+        .loss {
+            color: #ff6b6b;
+        }
+
+        .zero-sum-display {
+            background: rgba(255,255,255,0.15);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            border: 2px solid rgba(255,215,0,0.3);
+        }
+
+        .zero-sum-title {
+            font-size: 1.8em;
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+
+        .zero-sum-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .game-state-indicator {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.5s ease;
+        }
+
+        .zero-sum {
+            background-color: #ffd700; /* Gold */
+            color: #1e3c72;
+        }
+
+        .positive-sum {
+            background-color: #4ecdc4; /* Green */
+            color: white;
+        }
+
+        .negative-sum {
+            background-color: #ff6b6b; /* Red */
+            color: white;
+        }
+
+        .market-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .simulation-info {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            line-height: 1.6;
+        }
+
+        .simulation-info h3 {
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🪙 Bitcoin Simulation</h1>
+        
+        <div class="controls">
+            <button class="primary-btn" onclick="startSimulation()">Start Simulation</button>
+            <button class="secondary-btn" onclick="pauseSimulation()">Pause</button>
+            <button class="secondary-btn" onclick="resetSimulation()">Reset</button>
+            <button class="secondary-btn" onclick="addRandomEvent()">Random Market Event</button>
+        </div>
+
+        <div class="settings-panel">
+            <div class="setting-item">
+                <label for="bitcoinLimitInput">Bitcoin Max Supply</label>
+                <input type="number" id="bitcoinLimitInput" value="20" step="1000000">
+                <small>(Applied on Reset)</small>
+            </div>
+            <div class="setting-item">
+                <label for="speedInput">Simulation Speed</label>
+                <input type="range" id="speedInput" min="10" max="100" value="10">
+            </div>
+        </div>
+
+        <div class="zero-sum-display">
+            <div class="zero-sum-title">Total P&L of All Traders</div>
+            <div class="zero-sum-value" id="zeroSumValue">$0.00</div>
+            <div>Change in Total P&L of All Traders: $0.00<br>
+                <small>Total Bitcoin Mined: 0.0000 BTC (≈$0.00)</small><br> 
+            </div>
+            <div id="gameStateIndicator" class="game-state-indicator zero-sum">Zero-Sum Game</div>
+        </div>
+
+        <div class="dashboard">
+            <div class="card">
+                <h3>📈 Price Chart</h3>
+                <div class="chart-container">
+                    <canvas id="priceChart" class="chart-canvas"></canvas>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>📊 Market Statistics</h3>
+                <div class="market-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="currentPrice">$50,000</div>
+                        <div class="stat-label">Current Price</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalVolume">0</div>
+                        <div class="stat-label">Total Volume</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalTrades">0</div>
+                        <div class="stat-label">Total Trades</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="volatility">0%</div>
+                        <div class="stat-label">Volatility</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="traders-grid" id="tradersGrid">
+            <!-- Traders will be populated here -->
+        </div>
+
+        <div class="simulation-info">
+            <h3>🎯 Explanation</h3>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li><strong>Hodlers:</strong> Buy and hold strategy</li>
+                <li><strong>Day Traders:</strong> Frequent buying/selling based on short-term movements</li>
+                <li><strong>Swing Traders:</strong> Medium-term position trading</li>
+                <li><strong>Arbitrageurs:</strong> Profit from price inefficiencies</li>
+                <li><strong>Miners:</strong> Create new Bitcoin through mining, incur electricity costs</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        class BitcoinSimulation {
+            constructor() {
+                this.price = 50;
+                this.priceHistory = [50];
+                this.timeStep = 0;
+                this.isRunning = false;
+                this.traders = [];
+                this.totalVolume = 0;
+                this.totalTrades = 0;
+                this.canvas = document.getElementById('priceChart');
+                this.ctx = this.canvas.getContext('2d');
+                
+                // Read initial settings from the DOM
+                this.maxSupply = parseInt(document.getElementById('bitcoinLimitInput').value) || 21000000;
+                this.simulationSpeed = 10; // Default speed
+                
+                this.initializeCanvas();
+                this.initializeTraders();
+                this.updateDisplay();
+            }
+
+            initializeCanvas() {
+                this.canvas.width = this.canvas.offsetWidth;
+                this.canvas.height = this.canvas.offsetHeight;
+            }
+
+            initializeTraders() {
+                const traderTypes = [
+                    { name: 'Joko', type: 'Hodler', strategy: 'hodl', cash: 10000, bitcoin: 0 },
+                    { name: 'Boby', type: 'Day Trader', strategy: 'dayTrade', cash: 15000, bitcoin: 0 },
+                    { name: 'Slamet', type: 'Swing Trader', strategy: 'swing', cash: 20000, bitcoin: 0 },
+                    { name: 'Diana', type: 'Arbitrageur', strategy: 'arbitrage', cash: 25000, bitcoin: 0 },
+                    { name: 'Eva', type: 'Hodler', strategy: 'hodl', cash: 8000, bitcoin: 0 },
+                    { name: 'Frans', type: 'Day Trader', strategy: 'dayTrade', cash: 12000, bitcoin: 0 },
+                    { name: 'Abdul', type: 'Swing Trader', strategy: 'swing', cash: 18000, bitcoin: 0 },
+                    { name: 'Dody', type: 'Arbitrageur', strategy: 'arbitrage', cash: 22000, bitcoin: 0 },
+                    { name: 'Miner-1', type: 'Miner', strategy: 'mining', cash: 5000, bitcoin: 0, hashRate: 100, miningCost: 25 },
+                    { name: 'Miner-2', type: 'Miner', strategy: 'mining', cash: 8000, bitcoin: 0, hashRate: 150, miningCost: 30 },
+                    { name: 'Miner-3', type: 'Miner', strategy: 'mining', cash: 12000, bitcoin: 0, hashRate: 200, miningCost: 35 }
+                ];
+
+                this.totalHashRate = 0;
+                this.blockReward = 1; // Current Bitcoin block reward
+                this.blockTime = 10; // 10 minutes average
+                this.difficulty = 1;
+                this.lastBlockTime = 0;
+                this.totalMined = 0;
+                this.networkFees = 0;
+                this.totalPnL = 0;
+
+                this.traders = traderTypes.map(trader => ({
+                    ...trader,
+                    initialValue: trader.cash,
+                    trades: [],
+                    lastAction: 'hold',
+                    momentum: 0,
+                    lastPrice: this.price,
+                    // Miner specific properties
+                    minedBitcoin: 0,
+                    totalMiningCosts: 0,
+                    miningProfit: 0,
+                    isActive: true
+                }));
+
+                // Calculate total network hash rate
+                this.totalHashRate = this.traders
+                    .filter(t => t.type === 'Miner')
+                    .reduce((sum, miner) => sum + miner.hashRate, 0);
+                this.totalMined = 0;
+                this.networkFees = 0;
+            }
+
+            simulateStep() {
+                if (!this.isRunning) return;
+
+                // Generate price movement
+                const volatility = 0.02 + Math.random() * 0.03;
+                const trend = (Math.random() - 0.5) * 2;
+                const priceChange = this.price * volatility * trend;
+                
+                this.price = Math.max(1000, this.price + priceChange);
+                this.priceHistory.push(this.price);
+                
+                // Keep only last 100 price points
+                if (this.priceHistory.length > 100) {
+                    this.priceHistory.shift();
+                }
+
+                // Execute mining and trader strategies
+                this.executeMining();
+                this.traders.forEach(trader => this.executeStrategy(trader));
+
+                this.timeStep++;
+                this.updateDisplay();
+                this.drawChart();
+
+                setTimeout(() => this.simulateStep(), this.simulationSpeed);
+            }
+
+            executeMining() {
+                // Check if max supply is reached 
+                if (this.totalMined >= this.maxSupply) {
+                    // Halt mining new bitcoins 
+                    this.traders.forEach(miner => {
+                        if (miner.type === 'Miner') {
+                            miner.lastAction = 'max supply reached';
+                        }
+                    });
+                    return; 
+                }
+
+                // Mining happens approximately every 10 time steps (representing ~10 minutes)
+                if (this.timeStep % 10 === 0 && this.timeStep > 0) {
+                    const miners = this.traders.filter(t => t.type === 'Miner' && t.isActive);
+                    
+                    if (miners.length > 0) {
+                        // Simple mining probability based on hash rate
+                        const totalActiveHashRate = miners.reduce((sum, miner) => sum + miner.hashRate, 0);
+                        
+                        // Randomly select a miner to mine the block based on hash rate
+                        const randomHash = Math.random() * totalActiveHashRate;
+                        let cumulativeHash = 0;
+                        let winningMiner = null;
+                        
+                        for (const miner of miners) {
+                            cumulativeHash += miner.hashRate;
+                            if (randomHash <= cumulativeHash) {
+                                winningMiner = miner;
+                                break;
+                            }
+                        }
+                        
+                        if (winningMiner) {
+                            // Calculate rewards and fees
+                            const blockReward = this.blockReward;
+                            const fees = this.networkFees / 10; // Distribute accumulated fees
+                            const totalReward = blockReward + fees;
+                            
+                            // Award the miner
+                            winningMiner.bitcoin += totalReward;
+                            winningMiner.minedBitcoin += totalReward;
+                            winningMiner.lastAction = 'mined';
+                            this.totalMined += totalReward;
+                            
+                            // Reset network fees
+                            this.networkFees = 0;
+                        }
+                    }
+                    
+                    // Apply mining costs to all active miners
+                    miners.forEach(miner => {
+                        const miningCost = miner.miningCost / 10; // Cost per block period
+                        miner.cash -= miningCost;
+                        miner.totalMiningCosts += miningCost;
+                        
+                        // Check if miner becomes unprofitable and shuts down
+                        if (miner.cash < 0) {
+                            miner.isActive = false;
+                            miner.lastAction = 'shutdown';
+                        }
+                    });
+                }
+                
+                // Accumulate network fees from transactions
+                this.networkFees += this.totalTrades * 0.001; // Small fee per transaction
+            }
+
+
+            executeStrategy(trader) {
+                const currentValue = trader.cash + (trader.bitcoin * this.price);
+                const priceChange = (this.price - trader.lastPrice) / trader.lastPrice;
+                
+                let action = 'hold';
+                let amount = 0;
+
+                switch (trader.strategy) {
+                    case 'hodl':
+                        if (Math.random() < 0.05 && trader.cash > 1000) {
+                            action = 'buy';
+                            amount = Math.min(trader.cash * 0.1, 2000);
+                        }
+                        break;
+
+                    case 'dayTrade':
+                        if (Math.abs(priceChange) > 0.01) {
+                            if (priceChange > 0.01 && trader.bitcoin > 0) {
+                                action = 'sell';
+                                amount = trader.bitcoin * 0.3;
+                            } else if (priceChange < -0.01 && trader.cash > 1000) {
+                                action = 'buy';
+                                amount = Math.min(trader.cash * 0.4, 3000);
+                            }
+                        }
+                        break;
+
+                    case 'swing':
+                        trader.momentum += priceChange;
+                        if (trader.momentum > 0.05 && trader.bitcoin > 0) {
+                            action = 'sell';
+                            amount = trader.bitcoin * 0.4;
+                            trader.momentum = 0;
+                        } else if (trader.momentum < -0.05 && trader.cash > 1000) {
+                            action = 'buy';
+                            amount = Math.min(trader.cash * 0.5, 4000);
+                            trader.momentum = 0;
+                        }
+                        break;
+
+                    case 'arbitrage':
+                        const efficiency = Math.random();
+                        if (efficiency < 0.3 && trader.cash > 1000) {
+                            action = 'buy';
+                            amount = Math.min(trader.cash * 0.2, 2000);
+                        } else if (efficiency > 0.7 && trader.bitcoin > 0) {
+                            action = 'sell';
+                            amount = trader.bitcoin * 0.2;
+                        }
+                        break;
+
+                    case 'mining':
+                        // Miners may sell some of their mined bitcoin to cover costs
+                        if (trader.bitcoin > 0 && trader.cash < trader.miningCost / 20) {
+                            action = 'sell';
+                            amount = Math.min(trader.bitcoin * 0.3, trader.bitcoin);
+                        }
+                        // Or they might buy more if profitable
+                        else if (this.price < trader.miningCost / this.blockReward && trader.cash > 2000) {
+                            action = 'buy';
+                            amount = Math.min(trader.cash * 0.1, 1000);
+                        }
+                        break;
+                }
+
+                if (action === 'buy' && amount > 0) {
+                    const btcAmount = amount / this.price;
+                    trader.cash -= amount;
+                    trader.bitcoin += btcAmount;
+                    trader.trades.push({ type: 'buy', amount: btcAmount, price: this.price, time: this.timeStep });
+                    this.totalVolume += amount;
+                    this.totalTrades++;
+                } else if (action === 'sell' && amount > 0) {
+                    const cashAmount = amount * this.price;
+                    trader.cash += cashAmount;
+                    trader.bitcoin -= amount;
+                    trader.trades.push({ type: 'sell', amount: amount, price: this.price, time: this.timeStep });
+                    this.totalVolume += cashAmount;
+                    this.totalTrades++;
+                }
+
+                trader.lastAction = action;
+                trader.lastPrice = this.price;
+            }
+
+            addRandomEvent() {
+                const events = [
+                    { type: 'pump', multiplier: 1.1 + Math.random() * 0.2 },
+                    { type: 'dump', multiplier: 0.8 - Math.random() * 0.2 },
+                    { type: 'volatility', multiplier: 1 + (Math.random() - 0.5) * 0.3 }
+                ];
+
+                const event = events[Math.floor(Math.random() * events.length)];
+                this.price *= event.multiplier;
+                this.price = Math.max(1000, this.price);
+            }
+
+            updateDisplay() {
+                // Update price and stats
+                document.getElementById('currentPrice').textContent = `$${this.price.toFixed(2)}`;
+                document.getElementById('totalVolume').textContent = this.totalVolume.toFixed(0);
+                document.getElementById('totalTrades').textContent = this.totalTrades;
+                
+                // Calculate volatility
+                if (this.priceHistory.length > 1) {
+                    const returns = this.priceHistory.slice(-20).map((price, i, arr) => 
+                        i > 0 ? (price - arr[i-1]) / arr[i-1] : 0
+                    );
+                    const volatility = Math.sqrt(returns.reduce((sum, r) => sum + r*r, 0) / returns.length) * 100;
+                    document.getElementById('volatility').textContent = `${volatility.toFixed(2)}%`;
+                }
+
+                // Update traders display
+                this.updateTradersDisplay();
+                
+                // Update zero sum display
+                this.updateZeroSumDisplay();
+            }
+
+            updateTradersDisplay() {
+                const grid = document.getElementById('tradersGrid');
+                grid.innerHTML = '';
+
+                this.traders.forEach(trader => {
+                    const currentValue = trader.cash + (trader.bitcoin * this.price);
+                    const pnl = currentValue - trader.initialValue;
+                    const pnlPercent = (pnl / trader.initialValue) * 100;
+
+                    const traderCard = document.createElement('div');
+                    traderCard.className = 'trader-card';
+                    
+                    let extraInfo = '';
+                    if (trader.type === 'Miner') {
+                        const miningProfit = (trader.minedBitcoin * this.price) - trader.totalMiningCosts;
+                        const status = trader.isActive ? '🟢 Active' : '🔴 Shutdown';
+                        extraInfo = `
+                            <div>Hash Rate: ${trader.hashRate} TH/s</div>
+                            <div>Status: ${status}</div>
+                            <div>Mined: ${trader.minedBitcoin.toFixed(4)} BTC</div>
+                            <div>Mining Costs: ${trader.totalMiningCosts.toFixed(2)}</div>
+                            <div>Mining Profit: ${miningProfit.toFixed(2)}</div>
+                        `;
+                    }
+
+                    traderCard.innerHTML = `
+                        <div class="trader-header">
+                            <div class="trader-name">${trader.name}</div>
+                            <div class="trader-type">${trader.type}</div>
+                        </div>
+                        <div>Cash: ${trader.cash.toFixed(2)}</div>
+                        <div>Bitcoin: ${trader.bitcoin.toFixed(4)} BTC</div>
+                        <div>Total Value: ${currentValue.toFixed(2)}</div>
+                        ${extraInfo}
+                        <div class="trader-stats">
+                            <div class="${pnl >= 0 ? 'profit' : 'loss'}">
+                                P&L: ${pnl.toFixed(2)} (${pnlPercent.toFixed(1)}%)
+                            </div>
+                            <div>Action: ${trader.lastAction}</div>
+                        </div>
+                    `;
+                    grid.appendChild(traderCard);
+                });
+            }
+
+            updateZeroSumDisplay() {
+                // Calculate total P&L including mining costs and rewards
+                const totalPnL = this.traders.reduce((sum, trader) => {
+                    const currentValue = trader.cash + (trader.bitcoin * this.price);
+                    return sum + (currentValue - trader.initialValue);
+                }, 0);
+                
+                // Add the value of newly mined Bitcoin (this breaks zero-sum nature)
+                const newBitcoinValue = this.totalMined * this.price;
+
+                const zeroSumElement = document.getElementById('zeroSumValue');
+                zeroSumElement.textContent = `${totalPnL.toFixed(2)}`;
+                
+                // Update the description to reflect mining impact
+                const descElement = zeroSumElement.nextElementSibling;
+                const changeInPnL = this.totalPnL - totalPnL;
+                descElement.innerHTML = `
+                    <span style='color:${changeInPnL>=0? 'lime': '#ee5a52'}'>Change in Total P&L of All Traders: ${(changeInPnL).toFixed(2)}</span><br>
+                    <small>Total Bitcoin Mined: ${this.totalMined.toFixed(4)} BTC (≈${newBitcoinValue.toFixed(2)})</small><br>
+                `;
+                
+                const indicator = document.getElementById('gameStateIndicator');
+                if (totalPnL > 100) {
+                    indicator.textContent = 'Positive-Sum Game (if only holding BTC is Beneficial)';
+                    indicator.className = 'game-state-indicator positive-sum';
+                } else if (totalPnL < -100) {
+                    indicator.textContent = 'Negative-Sum Game';
+                    indicator.className = 'game-state-indicator negative-sum';
+                } else {
+                    indicator.textContent = 'Zero-Sum Game';
+                    indicator.className = 'game-state-indicator zero-sum';
+                }
+
+                // update global value
+                this.totalPnL = totalPnL;
+            }
+
+            drawChart() {
+                const ctx = this.ctx;
+                const width = this.canvas.width;
+                const height = this.canvas.height;
+
+                // Clear canvas
+                ctx.clearRect(0, 0, width, height);
+
+                if (this.priceHistory.length < 2) return;
+
+                // Calculate min/max for scaling
+                const minPrice = Math.min(...this.priceHistory);
+                const maxPrice = Math.max(...this.priceHistory);
+                const priceRange = maxPrice - minPrice || 1;
+
+                // Draw grid
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                ctx.lineWidth = 1;
+                for (let i = 0; i <= 10; i++) {
+                    const y = (height / 10) * i;
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(width, y);
+                    ctx.stroke();
+                }
+
+                // Draw price line
+                ctx.strokeStyle = '#ffd700';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+
+                this.priceHistory.forEach((price, index) => {
+                    const x = (width / (this.priceHistory.length - 1)) * index;
+                    const y = height - ((price - minPrice) / priceRange) * height;
+                    
+                    if (index === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                });
+
+                ctx.stroke();
+
+                // Draw price labels
+                ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                ctx.font = '12px Arial';
+                ctx.fillText(`$${maxPrice.toFixed(0)}`, 5, 15);
+                ctx.fillText(`$${minPrice.toFixed(0)}`, 5, height - 5);
+                ctx.fillText(`$${this.price.toFixed(0)}`, width - 80, height / 2);
+            }
+
+            start() {
+                if(this.isRunning) return;
+                this.isRunning = true;
+                this.simulateStep();
+            }
+
+            pause() {
+                this.isRunning = false;
+            }
+
+            reset() {
+                this.isRunning = false;
+                this.price = 50000;
+                this.priceHistory = [50000];
+                this.timeStep = 0;
+                this.totalVolume = 0;
+                this.totalTrades = 0;
+                this.maxSupply = parseInt(document.getElementById('bitcoinLimitInput').value) || 20;
+                this.initializeTraders();
+                this.updateDisplay();
+                this.drawChart();
+            }
+        }
+
+        // Initialize simulation
+        const simulation = new BitcoinSimulation();
+
+        // --- Global functions and Event Listeners ---
+
+        function startSimulation() {
+            simulation.start();
+        }
+
+        function pauseSimulation() {
+            simulation.pause();
+        }
+
+        function resetSimulation() {
+            simulation.reset();
+        }
+
+        function addRandomEvent() {
+            simulation.addRandomEvent();
+        }
+        
+        // Event listener for the speed slider
+        const speedSlider = document.getElementById('speedInput');
+        speedSlider.addEventListener('input', (e) => {
+            const sliderValue = parseInt(e.target.value, 10); // Value from 1 to 100
+            // Map slider value to a delay. Higher slider value = faster speed (less delay).
+            // Let's map [1, 100] to [500ms, 20ms]
+            const maxDelay = 500; // Slowest
+            const minDelay = 20;  // Fastest
+            const delayRange = maxDelay - minDelay;
+            simulation.simulationSpeed = maxDelay - ((sliderValue - 1) / 99) * delayRange;
+        });
+        
+        // Set initial speed from slider
+        speedSlider.dispatchEvent(new Event('input'));
+
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            simulation.initializeCanvas();
+            simulation.drawChart();
+        });
+    </script>
+</body>
+</html>
