@@ -451,7 +451,7 @@
                 const trend = (Math.random() - 0.5) * 2;
                 const priceChange = this.price * volatility * trend;
                 
-                this.price = Math.max(1000, this.price + priceChange);
+                this.price = Math.max(10, this.price + priceChange);
                 this.priceHistory.push(this.price);
                 
                 // Keep only last 100 price points
